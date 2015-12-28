@@ -12,26 +12,13 @@ Vagrant.configure(2) do |config|
   config.hostmanager.include_offline = true
   config.ssh.forward_agent = true
 
-  # support for dhcp addresses
-  cached_addresses = {}
-  config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
-    if cached_addresses[vm.name].nil?
-      if hostname = (vm.ssh_info && vm.ssh_info[:host])
-        vm.communicate.execute("/usr/sbin/ip addr show enp0s8 | grep 'inet ' | xargs | cut -f 2 -d ' '| cut -f 1 -d '/' 2>&1") do |type, contents|
-          cached_addresses[vm.name] = contents.split("\n").first[/(\d+\.\d+\.\d+\.\d+)/, 1]
-        end
-      end
-    end
-    cached_addresses[vm.name]
-  end
-
   if Vagrant.has_plugin?('vagrant-cachier')
     config.cache.scope = :box
   end
 
-  config.vm.box = "oculushut/jenkins"
+  config.vm.box = "ubuntu/trusty64"
 
   config.vm.hostname = 'jenkins'
-  config.vm.network :private_network, type: :dhcp
+  config.vm.network :private_network, ip: '192.168.35.2'
   config.vm.provision :shell, path: 'install.sh'
 end
